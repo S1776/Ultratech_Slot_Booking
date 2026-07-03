@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UltraTech Paid Services - VR Demo Booking</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        .slot-booked {
+            background-color: #fee2e2 !important;
+            color: #ef4444 !important;
+            cursor: not-allowed;
+            border-color: #fca5a5 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen">
+
+    <nav class="bg-amber-500 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <span class="text-xl font-bold tracking-wider">UltraTech</span>
+            <span class="text-xs bg-black/20 px-2 py-0.5 rounded text-amber-100 font-semibold">PAID SERVICES</span>
+        </div>
+        <button id="toggleViewBtn" onclick="toggleView()" class="bg-amber-700 hover:bg-amber-800 text-sm px-4 py-2 rounded-md font-medium transition-all">
+            Switch to Admin Panel
+        </button>
+    </nav>
+
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+        
+        <div id="customerView" class="block">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div class="bg-gradient-to-r from-gray-900 to-amber-600 p-6 text-white">
+                    <h1 class="text-2xl md:text-3xl font-bold">VR Demo Gadget Experience</h1>
+                    <p class="text-amber-200 text-sm mt-1">Immersive Interior & Exterior Building Design Visualization</p>
+                </div>
+
+                <form id="bookingForm" onsubmit="handleBooking(event)" class="p-6 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Full Name *</label>
+                            <input type="text" id="custName" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none" placeholder="Enter your name">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Profile Type *</label>
+                            <select id="custType" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none bg-white">
+                                <option value="" disabled selected>Select your profile</option>
+                                <option value="Engineer">Engineer</option>
+                                <option value="Contractor">Contractor</option>
+                                <option value="IHB">IHB (Individual House Builder)</option>
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Project Location <span class="text-gray-400 font-normal">(Optional)</span></label>
+                            <input type="text" id="custLocation" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none" placeholder="City, Area or Site Landmark">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Select Time Slot * <span class="text-xs text-gray-500 font-normal">(Hourly availability)</span></label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="timeSlotContainer">
+                            </div>
+                        <input type="hidden" id="selectedTime" required>
+                    </div>
+
+                    <div class="bg-amber-50 rounded-xl p-5 border border-amber-200/60 text-center space-y-4">
+                        <div class="text-sm text-gray-700">
+                            <p class="font-medium">To finalize and register your slot, lock your details below and give a quick <strong class="text-amber-700">Missed Call</strong> to our tracking terminal.</p>
+                        </div>
+                        
+                        <div class="text-xl font-mono font-bold text-gray-800 tracking-wider">
+                            📞 Terminal Hub: <span id="displayTerminalNum">+91 98765 43210</span>
+                        </div>
+
+                        <button type="submit" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all inline-flex items-center justify-center space-x-3 transform active:scale-95">
+                            <span>Register & Launch Dialer</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="adminView" class="hidden space-y-8">
+            
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2">
+                    <span>🔗 Google Ads Smart-Link Generator</span>
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Base Deployment URL</label>
+                        <input type="text" id="baseAppUrl" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm text-gray-600" readonly>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Campaign Name</label>
+                            <input type="text" id="campaignName" value="ut_vr_interior_exterior" oninput="generateAdsLink()" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Target Terminal Mobile No.</label>
+                            <input type="text" id="terminalNumberInput" value="+919876543210" oninput="updateTerminalNumber()" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div class="bg-gray-900 p-4 rounded-xl flex items-center justify-between">
+                        <span id="generatedLinkOutput" class="text-amber-400 font-mono text-xs break-all select-all mr-2"></span>
+                        <button onclick="copyGeneratedLink()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded font-semibold shrink-0 transition-colors">Copy Link</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                <div class="p-6 bg-gray-900 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold">Registration Registry Logs</h2>
+                        <p class="text-xs text-gray-400">Tracks conversions arriving directly via your Google Ads deployment links</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-sm font-bold px-4 py-2 rounded shadow transition-colors inline-flex items-center space-x-1">
+                            <span>Export Excel (.xlsx)</span>
+                        </button>
+                        <button onclick="clearSystemData()" class="bg-red-700 hover:bg-red-800 text-sm font-medium px-3 py-2 rounded transition-colors text-red-100">Reset System</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 border-b border-gray-200 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                <th class="p-4">Timestamp</th>
+                                <th class="p-4">Name</th>
+                                <th class="p-4">Type</th>
+                                <th class="p-4">Location</th>
+                                <th class="p-4">Booked Slot</th>
+                                <th class="p-4">Campaign Context</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registryTableBody" class="text-sm divide-y divide-gray-100 text-gray-700">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Operational Parameters
+        const HOURS = ["10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"];
+        let bookings = JSON.parse(localStorage.getItem('ut_vr_bookings')) || [];
+        let config = JSON.parse(localStorage.getItem('ut_vr_config')) || { terminalNumber: "+91 98765 43210" };
+
+        // Initialization
+        window.onload = function() {
+            document.getElementById('baseAppUrl').value = window.location.origin + window.location.pathname;
+            document.getElementById('terminalNumberInput').value = config.terminalNumber;
+            document.getElementById('displayTerminalNum').innerText = config.terminalNumber;
+            
+            generateAdsLink();
+            renderTimeSlots();
+            renderTable();
+        };
+
+        // UI Routing Engine
+        function toggleView() {
+            const customerView = document.getElementById('customerView');
+            const adminView = document.getElementById('adminView');
+            const toggleBtn = document.getElementById('toggleViewBtn');
+
+            if (customerView.classList.contains('block')) {
+                customerView.classList.replace('block', 'hidden');
+                adminView.classList.replace('hidden', 'block');
+                toggleBtn.innerText = "Switch to Customer View";
+            } else {
+                customerView.classList.replace('hidden', 'block');
+                adminView.classList.replace('block', 'hidden');
+                toggleBtn.innerText = "Switch to Admin Panel";
+                renderTimeSlots(); // Keep slot changes up-to-date
+            }
+        }
+
+        // Generate Time Slot Interface Grid Component
+        function renderTimeSlots() {
+            const container = document.getElementById('timeSlotContainer');
+            container.innerHTML = '';
+            
+            // Get currently occupied slots from persistence data layer
+            const takenSlots = bookings.map(b => b.bookedSlot);
+
+            HOURS.forEach(time => {
+                const isBooked = takenSlots.includes(time);
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.innerText = time;
+                button.className = `p-3 text-sm font-medium border rounded-xl text-center transition-all ${
+                    isBooked 
+                    ? 'slot-booked' 
+                    : 'border-gray-200 text-gray-700 hover:border-amber-500 hover:bg-amber-50 cursor-pointer'
+                }`;
+
+                if (isBooked) {
+                    button.disabled = true;
+                    button.innerText = `${time} (Booked)`;
+                } else {
+                    button.onclick = () => selectSlot(button, time);
+                }
+
+                container.appendChild(button);
+            });
+        }
+
+        // Handling Active Selection Style changes
+        function selectSlot(element, time) {
+            const currentSelected = document.getElementById('selectedTime').value;
+            
+            // Clear prior visual select elements state
+            const buttons = document.getElementById('timeSlotContainer').getElementsByTagName('button');
+            for(let btn of buttons) {
+                if(!btn.disabled) {
+                    btn.className = "p-3 text-sm font-medium border border-gray-200 rounded-xl text-center text-gray-700 hover:border-amber-500 hover:bg-amber-50 cursor-pointer";
+                }
+            }
+
+            // Assign structural state data values
+            if (currentSelected === time) {
+                document.getElementById('selectedTime').value = '';
+            } else {
+                element.className = "p-3 text-sm font-bold border-2 border-amber-600 bg-amber-50 rounded-xl text-center text-amber-900 shadow-sm";
+                document.getElementById('selectedTime').value = time;
+            }
+        }
+
+        // Registration form execution pipeline handler
+        function handleBooking(e) {
+            e.preventDefault();
+            const chosenSlot = document.getElementById('selectedTime').value;
+
+            if (!chosenSlot) {
+                alert("Please select an available appointment time slot to continue.");
+                return;
+            }
+
+            // Capture UTM attributes mapped via current location search strings
+            const urlParams = new URLSearchParams(window.location.search);
+            const campaignSource = urlParams.get('utm_source') || 'Direct Organic / Unknown';
+            const campaignName = urlParams.get('utm_campaign') || 'N/A';
+
+            const newBooking = {
+                timestamp: new Date().toLocaleString(),
+                name: document.getElementById('custName').value.trim(),
+                type: document.getElementById('custType').value,
+                location: document.getElementById('custLocation').value.trim() || 'Not Provided',
+                bookedSlot: chosenSlot,
+                campaignContext: `Source: ${campaignSource} | Campaign: ${campaignName}`
+            };
+
+            // Commit record to internal structural system logs array
+            bookings.push(newBooking);
+            localStorage.setItem('ut_vr_bookings', JSON.stringify(bookings));
+
+            // Clean data UI visual forms configurations state management
+            document.getElementById('bookingForm').reset();
+            document.getElementById('selectedTime').value = '';
+            renderTimeSlots();
+            renderTable();
+
+            // Native hardware processing engine execution to trigger dialer application
+            const sanitizedPhone = config.terminalNumber.replace(/\s+/g, '');
+            window.location.href = `tel:${sanitizedPhone}`;
+        }
+
+        // Admin Link Building Engine Logic
+        function generateAdsLink() {
+            const base = document.getElementById('baseAppUrl').value;
+            const camp = encodeURIComponent(document.getElementById('campaignName').value.trim() || 'campaign');
+            const finalUrl = `${base}?utm_source=google_ads&utm_medium=cpc&utm_campaign=${camp}`;
+            document.getElementById('generatedLinkOutput').innerText = finalUrl;
+        }
+
+        function updateTerminalNumber() {
+            const num = document.getElementById('terminalNumberInput').value.trim();
+            config.terminalNumber = num;
+            localStorage.setItem('ut_vr_config', JSON.stringify(config));
+            document.getElementById('displayTerminalNum').innerText = num;
+        }
+
+        function copyGeneratedLink() {
+            const linkText = document.getElementById('generatedLinkOutput').innerText;
+            navigator.clipboard.writeText(linkText);
+            alert("Tracking deep link copied to clipboard successfully!");
+        }
+
+        // Render Table Component Content Row data mapping engine
+        function renderTable() {
+            const tbody = document.getElementById('registryTableBody');
+            tbody.innerHTML = '';
+
+            if (bookings.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-gray-400 font-medium italic bg-gray-50/50">No lead registrations processed yet.</td></tr>`;
+                return;
+            }
+
+            bookings.asReversed().forEach(b => {
+                const row = document.createElement('tr');
+                row.className = "hover:bg-gray-50 transition-colors";
+                row.innerHTML = `
+                    <td class="p-4 font-mono text-xs text-gray-500">${b.timestamp}</td>
+                    <td class="p-4 font-semibold text-gray-900">${b.name}</td>
+                    <td class="p-4"><span class="px-2 py-1 text-xs rounded font-medium bg-gray-100 border border-gray-200">${b.type}</span></td>
+                    <td class="p-4 text-gray-600">${b.location}</td>
+                    <td class="p-4"><span class="px-2 py-1 text-xs rounded font-bold bg-amber-100 text-amber-800 border border-amber-200">${b.bookedSlot}</span></td>
+                    <td class="p-4 text-xs text-gray-500 max-w-xs truncate" title="${b.campaignContext}">${b.campaignContext}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // SheetJS Data Exporter Interface integration Engine
+        function exportToExcel() {
+            if (bookings.length === 0) {
+                alert("No data available to translate to Excel format.");
+                return;
+            }
+
+            // Setup Data Structure
+            const formattedData = bookings.map((b, index) => ({
+                "ID": index + 1,
+                "Timestamp Logged": b.timestamp,
+                "Customer Name": b.name,
+                "Profession Profile Type": b.type,
+                "Site / Project Location": b.location,
+                "Allocated VR Booking Slot": b.bookedSlot,
+                "Google Ads Marketing Context Data": b.campaignContext
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(formattedData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "VR Lead Conversions");
+
+            // Handle Column Width Constraints calculation mappings automatically
+            const maxProps = [{wch: 6}, {wch: 24}, {wch: 26}, {wch: 16}, {wch: 28}, {wch: 26}, {wch: 45}];
+            worksheet['!cols'] = maxProps;
+
+            // Generate physical downloadable dynamic system trigger action
+            XLSX.writeFile(workbook, `UltraTech_VR_Service_Leads_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        // Complete local state system wipe clean logic sequence
+        function clearSystemData() {
+            if(confirm("Warning! This operation permanently wipes all local appointments stored on this device. Proceed?")) {
+                bookings = [];
+                localStorage.removeItem('ut_vr_bookings');
+                renderTimeSlots();
+                renderTable();
+            }
+        }
+    </script>
+</body>
+</html>
